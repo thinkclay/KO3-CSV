@@ -1,0 +1,3 @@
+[submodule "vendor/parsecsv"]
+	path = vendor/parsecsv
+	url = https://github.com/thinkclay/php-lib-parse-csv.git
