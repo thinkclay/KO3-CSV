@@ -1,4 +1,4 @@
-# Hubspot Module for Kohana 3.x
+# CSV Module for Kohana 3.x
 
 A Kohana framework module to help reading and writing CSV files.
 
