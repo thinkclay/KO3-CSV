@@ -2,9 +2,7 @@
 
 A Kohana framework module to help reading and writing CSV files.
 
-## How to use
-
-### Reading CSV file
+## Reading CSV file
 
 Below is a typical example how to read csv file.
 
@@ -33,10 +31,9 @@ $csv = CSV::factory('file.csv', [
     'delimiter'   => ';', // Use comma delimiter
     'has_titles'  => FALSE, // Assume csv does not has titles
 ]);
+```
 
-### Writing CSV file
-
-Below is a typical example how to write csv file.
+## Writing a CSV file
 
 ```php
 // Save CSV file into file.csv
@@ -56,7 +53,8 @@ CSV::factory('file.csv')
     ->save();
 ```
 
-How to append CSV file
+### Append CSV file
+
 ```php
 CSV::factory('file.csv')
     ->values(array('donna', '25'))
@@ -64,7 +62,7 @@ CSV::factory('file.csv')
     ->save(TRUE);
 ```
 
-### Misc
+## Misc
 
 Set encoding
 
@@ -73,7 +71,7 @@ CSV::factory('file.csv')
     ->encode('UTF-16', 'UTF-8');
 ```
 
-Make user download csv file
+### Make user download csv file
 
 ```php
 CSV::factory('file.csv')
