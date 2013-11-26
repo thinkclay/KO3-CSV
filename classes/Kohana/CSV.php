@@ -19,33 +19,17 @@ class Kohana_CSV
     /**
      * CSV Class constructor
      * 
-     * @param   string   filename
-     * @param   string   type of file to parse
-     * @param   array    CSV config
+     * @param   string  $filename   File name
+     * @param   string  $format     File format to parse (csv, iif)
+     * @param   array   $config     CSV config
+     * 
      * @return  CSV
      */
-    public function __construct($filename, $format = 'csv', array $config = [])
+    public function __construct($filename, array $config = [])
     {
         require_once Kohana::find_file('vendor/parsecsv', 'parsecsv.lib');
-
-        switch ($format)
-        {
-            case 'iif' :
-                $this->_config = $config + (array) Kohana::$config->load('csv_iif');
-                
-                // Chop the first two lines and create a copy of the file as a CSV
-                $file_data = file($filename);
-                unset($file_data[0]);
-                unset($file_data[1]);
-                $filename = preg_replace('/iif/i', 'csv', $filename);
-                $outstring = implode("\n", $file_data);
-                file_put_contents($filename, $outstring);
-
-                break;
-
-            default :
-                $this->_config = $config + (array) Kohana::$config->load('csv');
-        }
+        
+        $this->_config = $config + (array) Kohana::$config->load('csv.csv.format');
         
         $this->_csv = new parseCSV();
         $this->_csv->delimiter = $this->_config['delimiter'];
@@ -61,28 +45,31 @@ class Kohana_CSV
     /**
      * Create and return new CSV class
      *
-     * 		// Create new CSV class and use semi colon delimiter
-     * 		$csv = CSV::factory('file.csv', array('delimiter' => ';'));
+     *   // Create new CSV class and use semi colon delimiter
+     *   $csv = CSV::factory('file.csv', ['delimiter' => ';']);
      *
-     * @param   string   filename
-     * @param   array    CSV config
+     * @param   string  $filename   Filename
+     * @param   string  $format     File format to parse (csv, iif)
+     * @param   array   $config     CSV config
+     * 
      * @return  CSV
      */
-    public static function factory($filename, $format = 'csv', array $config = array())
+    public static function factory($filename, array $config = [])
     {
-        return new CSV($filename, $format, $config);
+        return new CSV($filename, $config);
     }
 
     /**
-     *  Convert character encoding
+     * Convert character encoding
      *
-     * 		$rows = CSV::factory('file.csv')
-     * 			->encode('UTF-16', 'UTF-8')
-     * 			->parse()
-     *      ->rows();
+     *   $rows = CSV::factory('file.csv')
+     *       ->encode('UTF-16', 'UTF-8')
+     *       ->parse()
+     *       ->rows();
      *
-     * @param   string   input character encoding, uses default if left blank
-     * @param   string   output character encoding, uses default if left blank
+     * @param   string   $input     input character encoding, uses default if left blank
+     * @param   string   $output    output character encoding, uses default if left blank
+     * 
      * @return  CSV
      */
     public function encode($input = NULL, $output = NULL)
@@ -93,7 +80,7 @@ class Kohana_CSV
     }
 
     /**
-     *  Parse CSV file, you need to use another function rows() or titles() to get the rows
+     * Parse CSV file, you need to use another function rows() or titles() to get the rows
      *
      * @return  CSV
      */
@@ -110,124 +97,164 @@ class Kohana_CSV
         return $this;
     }
 
-  /**
-   *  Set or get CSV column titles. Leave blank to get titles. 
-   * 	If you need to get titles, make sure you do it after calling parse() function.
-   *
-   * 		// Set titles example
-   * 		CSV::factory('file.csv')
-   * 			->titles(array('Name', 'Address', 'Telephone'));
-   * 
-   * 		// Get titles example
-   * 		$titles = CSV::factory('file.csv')
-   *      ->parse()
-   *      ->titles();
-   *
-   * @param   array   array of title
-   * @return  mixed   CSV or array
-   */
-  public function titles(array $titles = array())
-  {
-    if ($titles)
+    /**
+     * Set or get CSV column titles. Leave blank to get titles. 
+     * If you need to get titles, make sure you do it after calling parse() function.
+     *
+     *   // Set titles example
+     *   CSV::factory('file.csv')
+     *       ->titles(['Name', 'Address', 'Telephone'));
+     * 
+     *   // Get titles example
+     *   $titles = CSV::factory('file.csv')
+     *       ->parse()
+     *       ->titles();
+     *
+     * @param   array   array of title
+     * @return  mixed   CSV or array
+     */
+    public function titles(array $titles = [])
     {
-      $this->_titles = $titles;
-      return $this;
-  }
-  else
-  {
-      return $this->_titles;
-  }
-}
+        if ($titles)
+        {
+            $this->_titles = $titles;
 
-  /**
-   *  Set or get CSV rows (without titles). Leave blank to get rows. 
-   * 	If you need to get rows, make sure you do it after calling parse() function.
-   * 
-   *  Return 2D array of rows with row number and title as the key of the array
-   *
-   * 		// Set rows example
-   * 		CSV::factory('file.csv')
-   * 			->rows($array);
-   * 
-   * 		// Get rows example
-   * 		$rows = CSV::factory('file.csv')
-   *      ->parse()
-   *      ->rows();
-   * 
-   *    foreach ($rows as $row)
-   *    {
-   *      echo $row['name'];
-   *    }
-   *
-   * @param   array   2D array
-   * @return  mixed   CSV or 2D array with row number and title as the key of the array
-   */
-  public function rows(array $rows = array())
-  {
-    if ($rows)
+            return $this;
+        }
+        else
+        {
+            return $this->_titles;
+        }
+    }
+
+    /**
+     * Set or get CSV rows (without titles). Leave blank to get rows. 
+     * If you need to get rows, make sure you do it after calling parse() function.
+     * 
+     * Return 2D array of rows with row number and title as the key of the array
+     *
+     *   // Set rows example
+     *   CSV::factory('file.csv')->rows($array);
+     * 
+     *   // Get rows example
+     *   $rows = CSV::factory('file.csv')->parse()->rows();
+     * 
+     *   foreach ($rows as $row)
+     *   {
+     *      echo $row['name'];
+     *   }
+     *
+     * @param   array   $rows   2D array
+     * 
+     * @return  mixed   CSV or 2D array with row number and title as the key of the array
+     */
+    public function rows(array $rows = [])
     {
-      $this->_rows = $rows;
-      return $this;
-  }
-  else
-  {
-      return $this->_rows;
-  }
-}
+        if ($rows)
+        {
+            $thiss->_rows = $rows;
+        
+            return $this;
+        }
+        else
+        {
+            return $this->_rows;
+        }
+    }
 
-  /**
-   *  Set CSV row
-   *
-   * 		// Set rows using values example
-   * 		CSV::factory('file.csv')
-   *      ->titles(array('name', 'age'))
-   * 			->values(array('erick', '25'))
-   *      ->values(array('john', '32'))
-   *      ->save();
-   * 
-   * @param   array   Row values
-   * @return  CSV
-   */
-  public function values(array $values)
-  {
-    $this->_rows[] = $values;
-    return $this;
-}
+    /**
+     * Set CSV row
+     *
+     *   // Set rows using values example
+     *   CSV::factory('file.csv')
+     *       ->titles(['name', 'age'])
+     *       ->values(['erick', '25'])
+     *       ->values(['john', '32'])
+     *       ->save();
+     * 
+     * @param   array   $values     Row values
+     * 
+     * @return  CSV
+     */
+    public function values(array $values)
+    {
+        $this->_rows[] = $values;
+        
+        return $this;
+    }
 
-  /**
-   *  Save CSV file
-   *
-   * 		CSV::factory('file.csv')
-   *      ->titles(array('name', 'age'))
-   * 			->values(array('erick', '25'))
-   *      ->values(array('john', '32'))
-   *      ->save();
-   * 
-   * @param   boolean   Append rows into file instead create new or overwrite, default is false.
-   * @return  CSV
-   */
-  public function save($append = FALSE)
-  {
-    $this->_csv->save($this->_filename, $this->_rows, $append, $this->_titles);
+    /**
+     * Set CSV row
+     *
+     *   // Set rows using values example
+     *   CSV::factory('file.csv')
+     *       ->titles(['name', 'age'])
+     *       ->values(['erick', '25'])
+     *       ->values(['john', '32'])
+     *       ->save();
+     * 
+     * @param   array   $values     Row values
+     * @param   array   $titles     Titles (used as keys)
+     * @param   string  $null_value Placeholder if key doesn't exist
+     * 
+     * @return  CSV
+     */
+    public function values_matching_titles(array $values, array $titles, $null_value = '')
+    {
+        $data = [];
 
-    return $this;
-}
+        foreach($titles as $title)
+        {
+            if (isset($values[$title]))
+            { 
+                $data[] = $values[$title];
+            }
+            else
+            {
+                $data[] = $null_value;
+            } 
+        } 
 
-  /**
-   *  Make user download csv file
-   *
-   * 		CSV::factory('file.csv')
-   *      ->titles(array('name', 'age'))
-   * 			->values(array('erick', '25'))
-   *      ->values(array('john', '32'))
-   *      ->send_file();
-   * 
-   * @return  CSV
-   */
-  public function send_file()
-  {
-    $this->_csv->output($this->_filename, $this->_rows, $this->_titles, $this->_csv->delimiter);
-    exit();
-}
+        $this->_rows[] = $data;
+        
+        return $this;
+    }
 
+    /**
+     * Save CSV file
+     *
+     *   CSV::factory('file.csv')
+     *       ->titles(['name', 'age'])
+     *       ->values(['erick', '25'])
+     *       ->values(['john', '32'])
+     *       ->save();
+     * 
+     * @param   boolean  $append  Append rows into file instead create new or overwrite, default is false.
+     * 
+     * @return  CSV
+     */
+    public function save($append = FALSE)
+    {
+        $this->_csv->save($this->_filename, $this->_rows, $append, $this->_titles);
+
+        return $this;
+    }
+
+    /**
+     * Make user download csv file
+     *
+     *   CSV::factory('file.csv')
+     *       ->titles(['name', 'age'))
+     *       ->values(['erick', '25'))
+     *       ->values(['john', '32'))
+     *       ->send_file();
+     * 
+     * @return  CSV
+     */
+    public function send_file()
+    {
+        $this->_csv->output($this->_filename, $this->_rows, $this->_titles, $this->_csv->delimiter);
+
+        exit();
+    }
 }
