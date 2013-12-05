@@ -31,8 +31,8 @@ class Kohana_IIF
         require_once Kohana::find_file('vendor/parsecsv', 'parsecsv.lib');
 
         $this->_config = $config + (array) Kohana::$config->load('csv.iif');
-        
-        // Chop the first two lines and create a copy of the file as a CSV
+        $this->_filename = $filename;
+
         $file_data = file($filename);
 
         foreach ($file_data as $line)
@@ -112,37 +112,39 @@ class Kohana_IIF
         } 
     }
 
-    public function create()
+    public function create($file = NULL)
     {
+        $data = '';
+
         if (isset($this->_data['VEND']))
         {
-            echo implode("\t", $this->_data['VEND']['titles'])."\r\n";
+            $data = implode("\t", $this->_data['VEND']['titles'])."\r\n";
 
             foreach ($this->_data['VEND']['rows'] as $row)
             {
-                echo implode("\t", $row)."\r\n";
+                $data .= implode("\t", $row)."\r\n";
             } 
         } 
 
         if (isset($this->_data['TRNS']))
         {
-            echo implode("\t", $this->_data['TRNS']['titles'])."\r\n";
+            $data .= implode("\t", $this->_data['TRNS']['titles'])."\r\n";
         } 
 
         if (isset($this->_data['SPL']))
         {
-            echo implode("\t", $this->_data['SPL']['titles'])."\r\n";
+            $data .= implode("\t", $this->_data['SPL']['titles'])."\r\n";
         } 
 
         if (isset($this->_data['ENDTRNS']))
         {
-            echo "!ENDTRNS\r\n";
+            $data .= "!ENDTRNS\r\n";
 
             if (isset($this->_data['TRNS']))
             {
                 foreach ($this->_data['TRNS']['rows'] as $row)
                 {
-                    echo implode("\t", $row)."\r\n";
+                    $data .= implode("\t", $row)."\r\n";
                 } 
             }
 
@@ -150,11 +152,18 @@ class Kohana_IIF
             {
                 foreach ($this->_data['SPL']['rows'] as $row)
                 {
-                    echo implode("\t", $row)."\r\n";
+                    $data .= implode("\t", $row)."\r\n";
                 } 
             }
 
-             echo "ENDTRNS\r\n";
+             $data .= "ENDTRNS\r\n";
+        }
+
+        if (is_null($file))
+        {
+            $file = $this->_filename;
         } 
+
+        return file_put_contents($file, $data);
     }
 }
